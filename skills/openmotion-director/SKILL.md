@@ -45,7 +45,7 @@ Typography: before choosing faces for new text, redesigning text hierarchy or ad
 
 需要选择、获取或替换素材时读取 [共享素材规范](../openmotion-production/references/materials.md)。现有主视觉质感不足，或任务含截图、跨段复现、多段落及展示感问题时，另按需读取 [制作决策与状态延续](../openmotion-production/references/decisions.md)，落实材料与动作、占时及状态复用的关系。
 
-按共享的 [生成边界](../openmotion-production/references/materials.md#generation-boundary) 判断是否进入素材生成。
+按共享的 [生成边界](../openmotion-production/references/materials.md#generation-boundary) 判断是否进入素材生成；需要 AIGC 时由 [openmotion-media](../openmotion-media/SKILL.md) 检查可用通道。
 
 进入素材生成时，生成只升级动态影片，不替代它。先按完全不生成的情况规划影片：动作脚本中的关键视觉事件、主体变化、场景切换、镜头运动与转场（例如描线产品逐步组装、扫描或识别节拍、场景切换、logo 收束）。再选出这份计划中由生成素材升级的元素：代码绘制的产品换成做同样动作的写实渲染或抠图，平面背景换成背景板，占位换成实拍画面；素材清单由这些职责得出。不能为放进生成图而删减或简化已规划的视觉事件，也不能让一张主视觉图撑起整部片子。请求能动起来的素材：干净或可去除背景上的主体、分离的背景板或光效层、为推、摇和视差留出的画幅、不同状态或角度。按每张生成静帧在计划中的职责给它相应动作，与该镜头的原生元素配合；有意的停留和安静镜头仍然成立。剪辑与重音跟随已选定的语音和音乐时间。预览前对照原生计划检查：每个计划的视觉事件都在，遮掉生成像素后仍能读作完整的动态影片。
 

@@ -48,6 +48,11 @@ test('media example preserves setup and task continuation across supported langu
   const media = mcpCapabilities.find(capability => capability.id === 'media')!;
   const translations = JSON.parse(readFileSync(new URL('../studio/src/i18n/mcp-ui.json', import.meta.url), 'utf8'));
   assert.match(media.prompt, /inspect/);
+  assert.match(media.prompt, /Plus or above/);
+  assert.match(media.prompt, /not-included.*openmotion_open_preview with target=providers.*page handoff/);
+  assert.match(media.prompt, /Only when signed in.*unknown, continue model discovery/);
+  assert.match(media.prompt, /mediaEntitlement/);
+  assert.match(media.prompt, /OpenDesign Cloud/);
   assert.match(media.prompt, /target=providers/);
   assert.match(media.prompt, /once I have saved/);
   assert.match(media.prompt, /inspect again/);
@@ -59,6 +64,8 @@ test('media example preserves setup and task continuation across supported langu
   const setup = readFileSync(new URL(setupLink[1], new URL('../skills/openmotion-media/SKILL.md', import.meta.url)), 'utf8');
   assert.match(setup, /target: "providers"/);
   assert.match(setup, /## Media handbook handoff/);
+  assert.match(setup, /not-included.*openmotion_open_preview.*target: "providers".*page handoff/);
+  assert.match(setup, /Signed-in account.*available: true.*unknown/);
   assert.match(setup, /MCP handbook media-generation example/);
   assert.match(setup, /read-only `inspect`/);
   assert.match(skill, /MCP handbook example \| \[Discovery and setup\]/);

@@ -12,7 +12,7 @@ export async function mediaUse(store: WorkspaceStore, args: any, tracking?: OmTr
   const referenceSection = (id: string) => registeredProvider(id)?.reference ?? 'compatible';
   if (args.provider !== undefined && !supported(args.provider)) throw new Error('INVALID_ARGUMENT: unsupported media provider');
   if (args.action === 'inspect') {
-    const status = await gateway.status();
+    const status = await gateway.status(false, { refreshAccount: true });
     return { providers: status.providers.filter(p => supported(p.id) && (isMediaProvider(p.id) || p.configured || p.id === 'account')),
       defaults: status.routes,
       settings: 'Open Settings > Model providers, or Account for OpenDesign sign-in. Saving a key enables a provider; sync or add its models and select defaults by capability.',

@@ -714,3 +714,59 @@ test('media setup discovery rechecks saved and removed keys without executing a 
   await gateway.configureProvider('atlascloud', { apiKey: null });
   assert.equal((await inspect()).providers.find(provider => provider.id === 'atlascloud')?.available, false);
 }));
+
+test('media inspection refreshes advisory billing without disabling account models or leaking balances', t => fixture(async store => {
+  await chmod(binary, 0o755);
+  const gateway = gatewayFor(store); gateway.options.detect = async () => [];
+  const account = gateway.account = new OpenDesignAccount(store.directory, { binary });
+  t.after(() => gateway.close());
+  const inspect = async () => (await mediaUse(store, { action: 'inspect' })).providers.find(p => p.id === 'account')!;
+  const signedOut = await inspect();
+  assert.equal(signedOut.available, false); assert.equal(Object.hasOwn(signedOut, 'mediaEntitlement'), false);
+  assert.equal(signedOut.plan, undefined); assert.equal(signedOut.hasBalance, undefined);
+  await signIn(account);
+  for (const [mode, entitlement, plan, hasBalance] of [
+    ['billing-free', 'not-included', 'free', false], ['billing-go', 'not-included', 'go', false],
+    ['billing-plus', 'included', 'plus', undefined], ['', 'included', 'pro', undefined],
+    ['billing-topup', 'unknown', 'free', true], ['billing-malformed', 'unknown', 'free', undefined],
+    ['billing-missing', 'unknown', 'go', undefined], ['billing-403', 'unknown', undefined, undefined],
+    ['billing-failure', 'unknown', undefined, undefined],
+  ] as const) {
+    await writeFile(path.join(account.home, 'fixture-mode'), mode);
+    const provider = await inspect();
+    assert.equal(provider.mediaEntitlement, entitlement, mode); assert.equal(provider.available, true, mode);
+    assert.equal(provider.plan, plan, mode); assert.equal(provider.hasBalance, hasBalance, mode);
+    const directory = await providerDirectory(gateway);
+    const official = directory.providers.find(p => p.id === 'account')!;
+    assert.equal(official.reason, provider.reason); assert.equal(official.available, true);
+    assert(!('mediaEntitlement' in official), 'ProviderConnection public fields remain unchanged');
+    assert(directory.models.some(m => m.modelId === 'language-one' && m.enabled), 'Go text discovery remains usable');
+    await setDefaultModel(gateway, 'text', 'account:language-one');
+    const models = await mediaUse(store, { action: 'models', provider: 'account', modality: 'image' });
+    assert(models.catalogs.some(page => page.models.length > 0), 'advisory entitlement must not filter discovery');
+    assert.doesNotMatch(JSON.stringify(provider), /"balance"|12\.50|1\.2345|controlKey|runtimeKey|fixture-user/);
+    if (mode === 'billing-free') {
+      const queued = await gateway.submit({ projectId: store.projectId, model: 'account:fixture-image', modality: 'image', prompt: 'cup', idempotencyKey: 'free-advisory' });
+      assert.equal(queued.state, 'queued', 'local submission retains server-side enforcement');
+      await gateway.cancel(queued.id);
+    }
+  }
+  await writeFile(path.join(account.home, 'fixture-mode'), 'billing-401');
+  const rejected = await inspect();
+  assert.equal(rejected.available, false); assert.equal(Object.hasOwn(rejected, 'mediaEntitlement'), false);
+  assert.equal((await account.summary()).state, 'reauth-required');
+}));
+
+
+test('provider directory keeps a signed-in account usable before billing is fetched', t => fixture(async store => {
+  const gateway = gatewayFor(store); gateway.options.detect = async () => [];
+  t.after(() => gateway.close());
+  t.mock.method(gateway.account, 'summary', async (refresh = false) => {
+    assert.equal(refresh, false, 'the directory must not refresh billing');
+    return { state: 'signed-in', consoleUrl: 'https://example.test' };
+  });
+  const account = (await providerDirectory(gateway)).providers.find(p => p.id === 'account')!;
+  assert.equal(account.available, true);
+  assert.equal(account.reason, 'Signed in; model access and balance are checked when generating');
+  assert.equal(Object.hasOwn(account, 'mediaEntitlement'), false, 'directory public fields stay unchanged');
+}));

@@ -4,7 +4,7 @@
 
 ## Generation boundary
 
-Without an explicit request to generate an asset, when native visuals meet the brief and no new narration or music is needed, do not call, suggest or ask about media generation. Native visuals do not mean the soundtrack is already supplied: new speech or music can still require generation. Enter [media generation](../../openmotion-media/SKILL.md) only for an explicit generation request or a real missing visual/audio asset, within the user's existing authorization; obtain spend consent when it is missing. Preserve user-provided media and approved material instead of generating replacements without need.
+OpenMotion includes built-in AIGC generation for images, video, speech and music. Explicit AIGC requests or missing visual/audio roles that native HTML/SVG/CSS cannot faithfully provide must enter [openmotion-media](../../openmotion-media/SKILL.md) to inspect the OpenDesign account, OpenDesign Cloud and configured providers; do not fake required imagery, footage, narration or music with native code. Pure native motion graphics without an explicit generation request or new speech/music stay outside media setup, login and billing prompts: do not call, suggest or ask about generation in that case. Preserve user-supplied and approved media, follow the source rules below for factual retrieval, and obtain missing spend consent before generation.
 
 ## Tool selection and discovery
 

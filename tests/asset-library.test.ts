@@ -105,7 +105,7 @@ test('asset HTTP uploads are replayable and media supports byte ranges; project 
   assert.deepEqual(await readFile(copied), bytes);
 }, false));
 
-test('in-app Agent streams, confirms generation, persists threads, rejects duplicate turns and stops without resubmitting', () => fixture(async store => {
+test('in-app Agent streams, confirms generation, persists threads, rejects duplicate turns and stops without resubmitting', t => fixture(async store => {
   const binaries: any[] = [];
   class FakeRpc {
     notify: (message: any) => void; sent: any[] = []; requests: any[] = [];
@@ -115,11 +115,27 @@ test('in-app Agent streams, confirms generation, persists threads, rejects dupli
     close() {}
   }
   const chats = new AssetConversations(store, { resolve: async () => '/fake/codex', rpc: FakeRpc as unknown as typeof AssetAgentRpc });
+  t.after(() => chats.close());
   const chat = await chats.create(), input = { requestId: 'one', text: 'Make a lake image', model: 'fixture-model', reasoning: 'high' };
   assert.equal(chats.pending, 0);
   await chats.start(chat.id, input); await until(() => binaries[0]?.requests.some((r: any) => r.method === 'turn/start'));
   assert.equal(chats.pending, 1);
   const rpc = binaries[0];
+  const accountGateway = gatewayFor(store); accountGateway.options.detect = agents;
+  const summary = t.mock.method(accountGateway.account, 'summary', async () => ({ state: 'signed-in', plan: 'go', balance: '0.00', billingUnavailable: false, consoleUrl: 'https://example.test', user: { email: 'private@example.test' } }));
+  rpc.notify({ id: 88, method: 'item/tool/call', params: { tool: 'openmotion_asset_models', arguments: {} } });
+  await until(() => rpc.sent.some((r: any) => r.id === 88));
+  const reply = rpc.sent.find((r: any) => r.id === 88).result;
+  assert.equal(reply.success, true);
+  const account = JSON.parse(reply.contentItems[0].text).providers.find((p: any) => p.id === 'account');
+  assert.deepEqual(account, { id: 'account', available: true, reason: 'Signed in; multimodal generation requires OpenDesign Plus or above', mediaEntitlement: 'not-included', plan: 'go', hasBalance: false });
+  assert.doesNotMatch(reply.contentItems[0].text, /0\.00|private@example|"balance"/);
+  summary.mock.restore();
+  rpc.notify({ id: 89, method: 'item/tool/call', params: { tool: 'openmotion_asset_models', arguments: {} } });
+  await until(() => rpc.sent.some((r: any) => r.id === 89));
+  const signedOut = JSON.parse(rpc.sent.find((r: any) => r.id === 89).result.contentItems[0].text).providers.find((p: any) => p.id === 'account');
+  assert.deepEqual(Object.keys(signedOut).sort(), ['available', 'id', 'reason']);
+
   assert.equal(rpc.requests.find((r: any) => r.method === 'turn/start').params.effort, 'high');
   await assert.rejects(chats.start(chat.id, { requestId: 'invalid-effort', text: 'hello', reasoning: 'high' }), /Choose an Agent model/);
   assert.equal(rpc.requests.find((r: any) => r.method === 'thread/start').params.sandbox, 'read-only');

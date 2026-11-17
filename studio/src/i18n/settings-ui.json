@@ -335,7 +335,9 @@
     "Changes could not be saved. Resolve the error before continuing.": "更改未能保存，请先处理错误。",
     "Changes save automatically. Pending edits are checked every 15 seconds.": "更改会自动保存，每 15 秒检查一次待保存的编辑。",
     "Send this instruction to your Agent. It will check installation, start OpenMotion if needed, and verify the connection.": "将指令发给你的 Agent，它会检查安装状态，按需启动 OpenMotion 并验证连接。",
-    "Available": "可用"
+    "Available": "可用",
+    "Signed in; multimodal generation requires OpenDesign Plus or above": "已登录；多模态生成需要 OpenDesign Plus 或以上套餐",
+    "Signed in; model access and balance are checked when generating": "已登录；生成时将检查模型权限和余额"
   },
   "ja": {
     "Local Agents": "ローカル Agent",

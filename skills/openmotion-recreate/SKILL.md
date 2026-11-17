@@ -16,6 +16,8 @@ description: >-
 
 # OpenMotion Recreate — reference video → the user's own film
 
+For generated shot or audio needs, apply the [generation boundary](../openmotion-production/references/materials.md#generation-boundary) before using [openmotion-media](../openmotion-media/SKILL.md).
+
 ## Role and goal
 
 The user supplies a video and wants a version of it for themselves. Deliver the editable OpenMotion project, open in the editor, where the user reviews it and keeps editing. The default workflow reads the reference, builds the complete requested film, makes one focused preview comparison at up to four representative moments and fixes clear defects in at most one batch. It then exports with automatic technical verification and hands over the result. Detailed frame comparisons, scoring and extended visual revision follow an explicit request. Reading and measuring the reference follow the shared [reference reading and measurement](../openmotion-production/references/reference-video.md); [Rebuild](references/rebuild.md) covers this route's authoring decisions. Read [difficult visual reconstruction](references/reconstruction.md) when the reference requires that method. [Export and requested review](references/verify.md) owns this route's delivery and review scope, including where shared guidance describes a broader review. Use only the Tools actually returned by tools/list.

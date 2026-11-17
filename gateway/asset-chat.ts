@@ -176,7 +176,10 @@ export class AssetConversations {
       try {
         if (p.tool === modelsTool.name) {
           const gateway = gatewayFor(this.store), status = await gateway.status();
-          value = { ...await gateway.listModels(p.arguments), providers: status.providers.map(({ id, available }) => ({ id, available })) };
+          value = { ...await gateway.listModels(p.arguments), providers: status.providers.map(({ id, available, reason, mediaEntitlement, plan, hasBalance }) => ({
+            id, available, reason, ...(mediaEntitlement !== undefined ? { mediaEntitlement } : {}),
+            ...(plan !== undefined ? { plan } : {}), ...(hasBalance !== undefined ? { hasBalance } : {}),
+          })) };
         }
         else if ([assetUseTool.name, assetLibraryTool.name].includes(p.tool)) {
           validateInput(p.tool === assetUseTool.name ? assetUseTool.inputSchema : assetLibraryTool.inputSchema, p.arguments);
